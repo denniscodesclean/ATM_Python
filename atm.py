@@ -19,56 +19,80 @@ class BankAccount:
   """
   def __init__(self, account_holder, balance = 0):
     self.account_holder = account_holder
-    self.balance = balance
+    if balance > 0:
+      self.balance = balance
+    else:
+      self.balance = 0
+      print("Invalid Balance! \nBalance needs to be greater than 0.")
 
   # Timer
   def get_time(self):
     return datetime.now(local_timezone).strftime("%Y-%m-%d %H:%M:%S")
 
-  # define Deposit function
-  def deposit(self, amount, auto_message = True):
-    self.balance += amount
-    if auto_message:
+  # Number Validator, reject non-positive numebrs, reject invalid datatype
+  def num_validate(self, amount):
+    if isinstance(amount, bool):  # Check if the input is a boolean, cuz boolean can be converted to float and pass the check below.
+        print(f"{self.get_time()}"
+              "\nPlease enter a positive number.")
+        return False
+    try:
+      amount = float(amount)
+      if amount <= 0:
+        print(f"{self.get_time()}"
+              "\nPlease enter a positive number.")
+        return False
+      else:
+        self.validated = amount
+        return True
+    except (ValueError, NameError):
       print(f"{self.get_time()}"
-            f"\nWecome Back, {self.account_holder}!"
-            f"\nDeposit Completed."
-            f"\nDeposit: {amount}. Here's your Remaining Balance: {self.balance}")
+            "\nPlease Enter a Valid Number, loh!")
+      return False
 
-  # define Withdraw function
-  def withdraw(self, amount, auto_message = True):
-    if self.balance < amount:
-      print(f"{self.get_time()}"
-            f"\nWecome Back, {self.account_holder}!"
-            f" \nTrasaction Failed."
-            f"\nLow Balance, Remaining Balance: {self.balance}")
-    else:
-      self.balance -= amount
+  # define Deposit function
+  def deposit(self, amount=0, auto_message = True):
+    if self.num_validate(amount):
+      self.balance += self.validated
       if auto_message:
         print(f"{self.get_time()}"
               f"\nWecome Back, {self.account_holder}!"
-              f"\nWithdraw Completed."
-              f"\nWithdraw: {amount}. Here's your remaining balance: {self.balance}")
+              f"\nDeposit Completed."
+              f"\nDeposit: {self.validated}. Here's your Remaining Balance: {self.balance}")
+
+  # define Withdraw function
+  def withdraw(self, amount=0, auto_message = True):
+    if self.num_validate(amount):
+      if self.balance < self.validated:
+        print(f"{self.get_time()}"
+              f"\nWecome Back, {self.account_holder}!"
+              f" \nTrasaction Failed."
+              f"\nLow Balance, Remaining Balance: {self.balance}")
+      else:
+        self.balance -= self.validated
+        if auto_message:
+          print(f"{self.get_time()}"
+                f"\nWecome Back, {self.account_holder}!"
+                f"\nWithdraw Completed."
+                f"\nWithdraw: {self.validated}. Here's your remaining balance: {self.balance}")
 
   #define Transfer
   def transfer(self, recipient, transfer_amount):
-    if self.balance < transfer_amount: # Insufficient Balance
-      print(f"{self.get_time()}"
-            f"\nWecome Back, {self.account_holder}!"
-            f"\nTransfer Failed;"
-            f"\nRemaining Balance: {self.balance}")
-    elif self == recipient: # Block Transfer to own Account
-      print(f"{self.get_time()}"
-            f"\nWecome Back, {self.account_holder}!"
-            f"\nTransfer Failed;"
-            f"\nCannot Transfer to Yourself :)")
-    elif transfer_amount <= 0: # Block Transfer Amount <= 0
-      print(f"{self.get_time()}"
-            "\nInvalid Transfer! Transfer Amount needs to be greater than 0")
-    else:
-      self.withdraw(transfer_amount, auto_message = False)
-      recipient.deposit(transfer_amount, auto_message = False)
-      print(f"{self.get_time()}"
-            f"\nWecome Back, {self.account_holder}!"
-            f"\nTransfer Completed."
-            f"\nTransferred {transfer_amount} FROM [{self.account_holder}] TO [{recipient.account_holder}]."
-            f"\nYour Remaining Balance: {self.balance}")
+    if self.num_validate(transfer_amount):
+      if self.balance < self.validated: # Insufficient Balance
+        print(f"{self.get_time()}"
+              f"\nWecome Back, {self.account_holder}!"
+              f"\nTransfer Failed;"
+              f"\nRemaining Balance: {self.balance}")
+      elif self == recipient: # Block Transfer to own Account
+        print(f"{self.get_time()}"
+              f"\nWecome Back, {self.account_holder}!"
+              f"\nTransfer Failed;"
+              f"\nCannot Transfer to Yourself :)")
+      else:
+        self.withdraw(self.validated, auto_message = False)
+        recipient.deposit(self.validated, auto_message = False)
+        print(f"{self.get_time()}"
+              f"\nWecome Back, {self.account_holder}!"
+              f"\nTransfer Completed."
+              f"\nTransferred {self.validated} FROM [{self.account_holder}] TO [{recipient.account_holder}]."
+              f"\nYour Remaining Balance: {self.balance}")
